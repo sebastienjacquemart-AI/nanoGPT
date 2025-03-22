@@ -1,3 +1,14 @@
+# notes
+Building a character-level large language model (chatgpt is a token-level llm, where tokens are word chunks): define a transformer, train it on tiny shakespeare dataset, generate infinite shakespeare. 
+
+First, define tokenizer to convert the text as a string to a sequence of integers according to a vocabulary of elements. In the case of a character-level model, translate individual characters into integers. 
+
+Second, feed the integer sequences into transformer to learn the patterns: sample random chunks of sequences (with a length block_size) from the dataset and feed them to the network. In a chunk of block_size, the chunk contains block_size examples and block_size+1 characters. Let's explain with example: when block_size is 2, the chunk may look like (1,2,3). 
+The following examples are in this chunk: 
+- when input is (1), the target is 2
+- when input is (1,2), the target is 3
+
+
 
 # nanoGPT
 
