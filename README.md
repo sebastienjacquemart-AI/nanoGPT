@@ -3,13 +3,17 @@ Building a character-level large language model (chatgpt is a token-level llm, w
 
 First, define tokenizer to convert the text as a string to a sequence of integers according to a vocabulary of elements. In the case of a character-level model, translate individual characters into integers. 
 
-Second, feed the integer sequences into transformer to learn the patterns: sample random chunks of sequences (with a length block_size) from the dataset and feed them to the network. In a chunk of block_size, the chunk contains block_size examples and block_size+1 characters. Let's explain with example: when block_size is 2, the chunk may look like (1,2,3). 
+Second, define data loader to feed the integer sequences into the model: sample batch (efficiency reasons) of random chunks of sequences (with a length block_size, computational reasons) from the dataset and feed them to the network. In a chunk of block_size, the chunk contains block_size examples and block_size+1 characters. Let's explain with example: when block_size is 2, the chunk may look like (1,2,3). 
 The following examples are in this chunk: 
 - when input is (1), the target is 2
 - when input is (1,2), the target is 3
+So, train on examples with context 1 to context of block size. This enables the network to start sampling generation with even 1 character of context.  
 
+Let's start with a character-level bigram language model: pass the inputs to a token-embedding table. A token-embedding is a vector of shape (vocab_size, vocab_size). If an input is passed to this table, it returns a vector that represents the raw logits for the next character in the sequence. These logits can be interpreted as unnormalized probabilities over the vocabulary, indicating the likelihood of each possible next character given the current one. These logits can be used to: 1. during training, evaluate the quality of the predictions (with respect to the targets) using cross-entropy loss (negative log likelihood); 2. during prediction, generate the next character in the sequence.
 
+The results of the bigram language model are of course not that great. It's a very simple model where the tokens are not 'talking to each other': given the previous context, only the last character is considered to make a prediction about the next character.  
 
+Small side-note about cuda: when cuda is used, move the data and the model parameters to the gpu. Then, the calculations happen on the gpu and they can be run a lot faster. 
 # nanoGPT
 
 ![nanoGPT](assets/nanogpt.jpg)
