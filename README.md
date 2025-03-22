@@ -11,7 +11,13 @@ So, train on examples with context 1 to context of block size. This enables the 
 
 Let's start with a character-level bigram language model: pass the inputs to a token-embedding table. A token-embedding is a vector of shape (vocab_size, vocab_size). If an input is passed to this table, it returns a vector that represents the raw logits for the next character in the sequence. These logits can be interpreted as unnormalized probabilities over the vocabulary, indicating the likelihood of each possible next character given the current one. These logits can be used to: 1. during training, evaluate the quality of the predictions (with respect to the targets) using cross-entropy loss (negative log likelihood); 2. during prediction, generate the next character in the sequence.
 
-The results of the bigram language model are of course not that great. It's a very simple model where the tokens are not 'talking to each other': given the previous context, only the last character is considered to make a prediction about the next character.  
+The results of the bigram language model are of course not that great. It's a very simple model where the tokens are not 'talking to each other': given the previous context, only the last character is considered to make a prediction about the next character. What's the simplest way to make tokens communicate with each other? Bag of words: take the average of the current and the previous tokens. How to do this efficiently? The mathematical trick in self-attention: at each position, compute weighted aggregations of past elements using matrix multiplication with a lower-triangular structure (tril). The values in this matrix determine the contribution of each past element to the current position. This forms the foundation of the self-attention block. 
+
+Let's implement self-attention for a single head. One small adjustment, the definition of the weighted aggregations matrix: 1. start from a zero-matrix (wei, according to Andrej) with shape (block_size, block_size); 2. for all the elements in wei where tril is equal to zero, replace with infinity; 3. apply softmax along every row. The wei matrix expresses the affinities between the different tokens. As it's now initialized as a zero-matrix, the affinities and the resulting elements on a row-level in the weighted aggregations matrix are uniform. 
+
+Add a position-embedding table to not only encode the identity of the token, but also the position. 
+
+
 
 Small side-note about cuda: when cuda is used, move the data and the model parameters to the gpu. Then, the calculations happen on the gpu and they can be run a lot faster. 
 # nanoGPT
